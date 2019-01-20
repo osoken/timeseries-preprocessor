@@ -339,7 +339,7 @@ class Interpolator(BaseTimeSeries):
         """
         s = self._tidy_ts_value(start, ts_format=ts_format)
         e = self._tidy_ts_value(end, ts_format=ts_format)
-        diff = self._tidy_step(step, step_format=None)
+        diff = self._tidy_step(step, step_format=step_format)
         i = s
         if not value_only:
             while i < e:
@@ -395,8 +395,8 @@ class Aggregator(BaseTimeSeries):
     def _update(self):
         pass
 
-    def generate(self, start, end, step, ts_format=None, step_format=None,
-                 value_only=False):
+    def generate(self, start, end, duration, step, ts_format=None,
+                 step_format=None, value_only=False):
         """returns a generator of the sequence from ``start`` to ``end`` with
         interval ``step``.
 
@@ -408,13 +408,14 @@ class Aggregator(BaseTimeSeries):
         """
         s = self._tidy_ts_value(start, ts_format=ts_format)
         e = self._tidy_ts_value(end, ts_format=ts_format)
-        diff = self._tidy_step(step, step_format=None)
+        diff = self._tidy_step(step, step_format=step_format)
+        dur = self._tidy_step(duration, step_format=step_format)
         i = s
         if not value_only:
             while i < e:
-                yield (datetime.fromtimestamp(i), self(i, i+diff))
+                yield (datetime.fromtimestamp(i), self(i, i+dur))
                 i += diff
         else:
             while i < e:
-                yield self(i, i+diff)
+                yield self(i, i+dur)
                 i += diff

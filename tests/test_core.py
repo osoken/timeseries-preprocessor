@@ -180,22 +180,27 @@ class GeneratorTest(unittest.TestCase):
             {'timestamp': '2018-12-31 18:30:30', 'value': 82},
             {'timestamp': '2018-12-31 18:31:00', 'value': 80},
             {'timestamp': '2018-12-31 18:31:30', 'value': 82},
-            {'timestamp': '2018-12-31 18:32:00', 'value': 85}
+            {'timestamp': '2018-12-31 18:32:00', 'value': 85},
+            {'timestamp': '2018-12-31 18:32:30', 'value': 81},
         ], aggregation_func=lambda it: sum(d[1] for d in it))
-        self.assertTrue(isinstance(t.generate(0, 1, 0.2), GeneratorType))
+        self.assertTrue(isinstance(t.generate(0, 1, 0.2, 0.2), GeneratorType))
         g = t.generate('2018-12-31 18:30:00', '2018-12-31 18:33:00', '1 min',
-                       value_only=True)
+                       '30 seconds', value_only=True)
         res = list(g)
-        expects = [float(89) + float(82), float(80) + float(82), float(85)]
+        expects = [
+            89.0 + 82.0, 82.0 + 80.0, 80.0 + 82.0, 82.0 + 85.0, 85.0 + 81.0,
+            81.0
+        ]
         self.assertEquals(res, expects)
         g = t.generate('2018-12-31 18:30:00', '2018-12-31 18:33:00', '1 min',
-                       value_only=False)
+                       '30 seconds', value_only=False)
         res = list(g)
-        expects = [(
-            datetime(2018, 12, 31, 18, 30, 00) + timedelta(minutes=i),
-            [float(89) + float(82), float(80) + float(82), float(85)][i]
-        ) for i in range(3)]
-        self.assertEquals(res, expects)
-        g = t.generate('2018-12-31 18:30:00', '2018-12-31 18:33:00', '1 min')
+        expects2 = [(
+            datetime(2018, 12, 31, 18, 30, 00) + timedelta(seconds=30 * i),
+            expects[i]
+        ) for i in range(6)]
+        self.assertEquals(res, expects2)
+        g = t.generate('2018-12-31 18:30:00', '2018-12-31 18:33:00', '1 min',
+                       '30 seconds')
         res = list(g)
-        self.assertEquals(res, expects)
+        self.assertEquals(res, expects2)
